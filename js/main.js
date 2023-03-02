@@ -11,20 +11,20 @@ Vue.component('notes', {
        <div class="column_notes">
        
         <div class="note_list_1_column">
-        <h1>1 Колонка</h1>
+        <h2>Запланированные задачи</h2>
              <note-list1  :note_list1="note_list1"></note-list1> 
         </div>
         
         <div class="note_list_2_column">
-        <h1>2 Колонка</h1>
+        <h2>Задачи в работе</h2>
              <note-list2  :note_list2="note_list2"></note-list2> 
         </div>
         <div class="note_list_3_column">
-        <h1>3 Колонка</h1>
+        <h2>Тестирование</h2>
              <note-list3  :note_list3="note_list3"></note-list3> 
         </div>
         <div class="note_list_4_column">
-        <h1>4 Колонка</h1>
+        <h2>Выполненные задачи</h2>
              <note-list4  :note_list4="note_list4"></note-list4> 
         </div>
         
@@ -48,35 +48,6 @@ Vue.component('notes', {
     computed: {},
 
     mounted() {
-        eventBus.$on('fields1-submitted', FieldsField => {
-            this.errors = []
-            if(this.note_list1.length < 3){
-                this.note_list1.push(FieldsField)
-            }else {
-                this.errors.push('В 1 колонке может быть только 3 карточки ')
-            }
-        })
-        eventBus.$on('AddCol2', FieldsField => {
-            this.errors = []
-            if(this.note_list2.length < 5){
-                this.note_list2.push(FieldsField)
-                this.note_list1.splice(this.note_list1.indexOf(FieldsField), 1)
-            }else {
-                this.errors.push("В 2 колонке может быть только 5 карточек ")
-            }
-        })
-        eventBus.$on('AddCol3', FieldsField =>{
-            this.note_list3.push(FieldsField)
-            this.note_list2.splice(this.note_list2.indexOf(FieldsField), 1)
-        })
-        eventBus.$on('AddCol4', FieldsField =>{
-            this.note_list4.push(FieldsField)
-            this.note_list3.splice(this.note_list3.indexOf(FieldsField), 1)
-        })
-        eventBus.$on('AddCol13', FieldsField =>{
-            this.note_list3.push(FieldsField)
-            this.note_list1.splice(this.note_list1.indexOf(FieldsField), 1)
-        })
 
 
     },
@@ -153,57 +124,16 @@ Vue.component('add-notes', {
         }
     },
     methods: {
-        addField() {
-            if (this.note4 === false) {
-                return this.note4 = true
-            }
-
-            if (this.note4 === true) {
-                return this.note5 = true
-            }
-
-        },
-        removeField() {
-
-            if (this.note5 === true) {
-                return this.note5 = false
-            }
-
-            if (this.note4 === true) {
-                return this.note4 = false
-            }
-
-
-        },
-
         onSubmit() {
             if (this.name && this.field1 && this.field2 && this.field3 && (!this.note4 || this.field4) && (!this.note5 || this.field5)) {
                 let FieldsField = {
                     name: this.name,
-                    arrTask: [
-                        {id: 1, title: this.field1, completed: false},
-                        {id: 2, title: this.field2, completed: false},
-                        {id: 3, title: this.field3, completed: false},
-                        {id: 4, title: this.field4, completed: false},
-                        {id: 5, title: this.field5, completed: false},
-                    ],
                     data: null,
                     status: 0,
                     errors: [],
                 }
                 eventBus.$emit('fields1-submitted', FieldsField)
                 this.name = null
-                this.arrTask = null
-                this.field1 = null
-                this.field2 = null
-                this.field3 = null
-                this.field4 = null
-                this.field5 = null
-            } else {
-                if (!this.name) this.errors.push("Name required.")
-                if (!this.field1) this.errors.push("field1 required.")
-                if (!this.field2) this.errors.push("field2 required.")
-                if (!this.field3) this.errors.push("field3 required.")
             }
         },
     },
@@ -222,20 +152,7 @@ Vue.component('add-notes', {
 Vue.component('note-list1', {
     template: `
 <div class="note_list1__">
-            <div class="note_list1" v-for="column in note_list1"><h2>Имя заметки: {{column.name}}</h2>
-                <span>
-                    <li v-for="task in column.arrTask" v-if="task   .title != null" >
-                            <strong>{{task.id}}</strong>
-                            <input type="checkbox"  
-                            id="scales" name="scales"
-                            task.completed = "true"     
-                            :disabled="task.completed" 
-                            v-on:change="column.status += 1"
-                            @change.prevent="updateColumn(column)">
-                            <span :class="{done: task.completed}" >{{task.title}}</span>
-                    </li>
-                </span>
-            </div>
+
 </div>
  `,
 
@@ -243,22 +160,7 @@ Vue.component('note-list1', {
         return {}
     },
     methods: {
-        updateColumn(FieldsField) {
-            let cardTask = 0
-            for(let i = 0; i < 5; i++){
-                if (FieldsField.arrTask[i].title != null) {
-                    cardTask++
-                }
-            }
-            if (((FieldsField.status / cardTask) * 100 >= 50) && (FieldsField.status / cardTask) * 100 != 100) {
-                eventBus.$emit('AddCol2', FieldsField)
-            }
-            if ((FieldsField.status / cardTask) * 100 === 100) {
-                FieldsField.data = new Date().toLocaleString()
-                eventBus.$emit('AddCol13', FieldsField)
-            }
 
-        },
     },
     computed: {},
 
@@ -282,20 +184,7 @@ Vue.component('note-list1', {
 Vue.component('note-list2', {
     template: `
 <div  class="note_list2__">
-            <div class="note_list2" v-for="column in note_list2"><h2>Имя заметки:{{column.name}}</h2>
-                <span>
-                    <li v-for="task in column.arrTask" v-if="task.title != null" >
-                            <strong>{{task.id}}</strong>
-                            <input type="checkbox" 
-                            task.completed = "true"     
-                            :disabled="task.completed" 
-                            v-on:change="column.status += 1"
-                            @change.prevent="updateColumnTwo(column)"
-                            >
-                            <span :class="{done: task.completed}" >{{task.title}}</span>
-                    </li>
-                </span>
-            </div>
+
  </div> 
  `,
 
@@ -303,19 +192,7 @@ Vue.component('note-list2', {
         return {}
     },
     methods: {
-        updateColumnTwo(FieldsField) {
-            let cardTask = 0
-            for(let i = 0; i < 5; i++){
-                if (FieldsField.name != null) {
-                    cardTask++
-                }
-            }
-            if ((FieldsField.status / cardTask) * 100 === 100) {
-                FieldsField.data = new Date().toLocaleString()
-                eventBus.$emit('AddCol3', FieldsField)
-            }
 
-        },
     },
 
     computed: {},
@@ -332,19 +209,7 @@ Vue.component('note-list2', {
 Vue.component('note-list3', {
     template: `
 <div>
-            <div class="note_list2" v-for="column in note_list3"><h2>Имя Заметки: {{column.name}}</h2>
-                <span>
-                    <li v-for="task in column.arrTask" v-if="task.title != null" >
-                            <strong>{{task.id}}</strong>
-                            <input type="checkbox" 
-                            :disabled="task.completed" 
-                            >
-                            <span :class="{done: task.completed}" >{{task.title}}</span>
-                    </li>
-                    <p>Дата окончания: <br>{{column.data}}</p>
-                    
-                </span>
-            </div>
+            
 </div>
 
  `,
@@ -365,19 +230,7 @@ Vue.component('note-list3', {
 Vue.component('note-list4', {
     template: `
 <div>
-            <div class="note_list4" v-for="column in note_list4"><h2>Имя Заметки: {{column.name}}</h2>
-                <span>
-                    <li v-for="task in column.arrTask" v-if="task.title != null" >
-                            <strong>{{task.id}}</strong>
-                            <input type="checkbox" 
-                            :disabled="task.completed" 
-                            >
-                            <span :class="{done: task.completed}" >{{task.title}}</span>
-                    </li>
-                    <p>Дата окончания: <br>{{column.data}}</p>
-                    
-                </span>
-            </div>
+            
 </div>
 
  `,
