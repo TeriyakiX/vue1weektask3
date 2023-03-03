@@ -3,6 +3,7 @@ let eventBus = new Vue()
 Vue.component('notes', {
     template: `
    <div>
+   <h1>Kanban</h1>
        <div class="_notes">
             <add-notes/>
          <p class="error" v-for="error in errors">{{ error }}</p>
@@ -67,7 +68,7 @@ Vue.component('notes', {
 
     },
     props: {
-        FieldsField: {
+        card: {
             type: Object,
         },
 
@@ -98,10 +99,14 @@ Vue.component('add-notes', {
                 <div class="field">
                     <textarea required id="point" v-model="description" placeholder="Описание"> </textarea>
                 </div>
+                <div>
+                    <p>Выберите сколько звезд, хотите дать заметке 1-3</p>
+                    <input required  id="point" v-model="star">
+                </div>
                 <div class="field">
                     <input required type="date" id="point" v-model="deadline">
                 </div>
-                <button type="submit" class="btn" @click="persist" >Добавить</button>
+                <button type="submit" class="btn">Добавить</button>
                 </div>
             </form>
         </div>
@@ -117,7 +122,8 @@ Vue.component('add-notes', {
             name: null,
             description: null,
             date: null,
-            deadline: null
+            deadline: null,
+            star: null
 
 
         }
@@ -133,19 +139,16 @@ Vue.component('add-notes', {
                 transfer: false,
                 edit: false,
                 editDate: null,
-                period: true
+                period: true,
+                star: this.star
             }
             eventBus.$emit('addColumn_1', card)
             this.name = null
             this.description = null
             this.date = null
             this.deadline = null
+            this.star = null
             },
-        persist() {
-            localStorage.name = this.name;
-            localStorage.description = this.description;
-            localStorage.deadline = this.deadline;
-        }
 
         },
 
@@ -161,16 +164,39 @@ Vue.component('add-notes', {
         },
     },
     mounted() {
-        if(localStorage.name) this.name = localStorage.name;
-        if(localStorage.description) this.description = localStorage.description;
-        if(localStorage.deadline) this.deadline = localStorage.deadline;
     }
 })
 
 Vue.component('note-list1', {
     template: `
 <div class="note_list1__">
-
+        <section id="main" class="main-alt">
+                <div class="column column__one">
+                    <div class="card" v-for="card in note_list1">
+                       <a @click="deleteCard(card)" style="color: red">Удалить</a>  <a @click="card.edit = true" style="color: green">Редактировать</a>
+                       <div class="tasks">Название: {{ card.name }}</div>
+                        <div class="star">Важность: {{ card.star }}</div>
+                        <div class="tasks">Описание: {{ card.description }}</div>
+                        <div class="tasks">Дата создания: {{ card.date }}</div>
+                        <div class="tasks">Крайний срок: {{ card.deadline }}</div>
+                        <div class="tasks" v-if="card.editDate != null">Последнее изменение: {{ card.editDate }}</div>
+                                         <a @click="nextColumn(card)" style="color: mediumblue">Следующая колонка</a>
+                        <div class="tasks" v-if="card.edit">
+                            <form @submit.prevent="updateTask(card)">
+                                <p>Новое название: 
+                                    <input type="text" v-model="card.name" placeholder="Название">
+                                </p>
+                                <p>Новое описание: 
+                                    <textarea v-model="card.description"></textarea>
+                                </p>
+                                <p>
+                                    <input type="submit" class="btn" value="Изменить карточку">
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
 </div>
  `,
 
@@ -178,7 +204,19 @@ Vue.component('note-list1', {
         return {}
     },
     methods: {
-
+        nextColumn(card) {
+            this.note_list1.splice(this.note_list1.indexOf(card), 1)
+            eventBus.$emit('addColumn_2', card)
+        },
+        deleteCard(card) {
+            this.note_list1.splice(this.note_list1.indexOf(card), 1)
+        },
+        updateTask(card) {
+            card.edit = false
+            this.note_list1.push(card)
+            this.note_list1.splice(this.note_list1.indexOf(card), 1)
+            card.editDate = new Date().toLocaleString()
+        },
     },
     computed: {},
 
@@ -189,7 +227,7 @@ Vue.component('note-list1', {
         note_list2: {
             type: Array,
         },
-        FieldsField: {
+        card: {
             type: Object,
         },
         errors: {
@@ -202,7 +240,34 @@ Vue.component('note-list1', {
 Vue.component('note-list2', {
     template: `
 <div  class="note_list2__">
-
+         <section id="main" class="main-alt">
+                <div class="column column__two">
+                    <div class="card" v-for="card in note_list2">
+                       <a @click="card.edit = true" style="color: green">Редактировать</a>
+                       <div class="tasks">Название: {{ card.name }}</div>
+                       <div class="star">Важность: {{ card.star }}</div>
+                        <div class="tasks">Описание: {{ card.description }}</div>
+                        <div class="tasks">Дата создания: {{ card.date }}</div>
+                        <div class="tasks">Крайний срок: {{ card.deadline }}</div>
+                        <div class="tasks" v-if="card.reason.length">Причина переноса: <p v-for="reason in card.reason">{{ reason }}</p></div>
+                        <div class="tasks" v-if="card.editDate != null">Последнее изменение: {{ card.editDate }}</div>
+                        <a @click="nextColumn(card)" style="color: mediumblue">Следующая колонка</a>
+                        <div class="tasks" v-if="card.edit">
+                            <form @submit.prevent="updateTask(card)">
+                                <p>Новое название: 
+                                    <input type="text" v-model="card.name" placeholder="Название">
+                                </p>
+                                <p>Новое описание: 
+                                    <textarea v-model="card.description"></textarea>
+                                </p>
+                                <p>
+                                    <input type="submit" class="btn" value="Изменить карточку">
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
  </div> 
  `,
 
@@ -210,7 +275,16 @@ Vue.component('note-list2', {
         return {}
     },
     methods: {
-
+        nextColumn(card) {
+            this.note_list2.splice(this.note_list2.indexOf(card), 1)
+            eventBus.$emit('addColumn_3', card)
+        },
+        updateTask(card) {
+            card.editDate = new Date().toLocaleString()
+            card.edit = false
+            this.note_list2.push(card)
+            this.note_list2.splice(this.note_list2.indexOf(card), 1)
+        }
     },
 
     computed: {},
@@ -219,15 +293,54 @@ Vue.component('note-list2', {
         note_list2: {
             type: Array,
         },
-        FieldsField: {
-            type: Array,
-        }
+        card: {
+            type: Object,
+        },
     }
 })
 Vue.component('note-list3', {
     template: `
 <div>
-            
+            <section id="main" class="main-alt">
+            <div class="column column__three">
+
+                <div class="card" v-for="card in note_list3">
+                   <a @click="card.edit = true" style="color: green">Редактировать</a>
+                   <div class="tasks">Название: {{ card.name }}</div>
+                   <div class="star">Важность: {{ card.star }}</div>
+                    <div class="tasks">Описание: {{ card.description }}</div>
+                    <div class="tasks">Дата создания: {{ card.date }}</div>
+                    <div class="tasks">Крайний срок: {{ card.deadline }}</div>
+                    <div class="tasks" v-if="card.reason.length">Причина переноса: <p v-for="reason in card.reason">{{ reason }}</p></div>
+                    <div class="tasks" v-if="card.editDate != null">Последнее изменение: {{ card.editDate }}</div>
+                    <a @click="card.transfer = true" style="color: mediumblue">Предыдущая колонка</a><br>
+                    <a @click="nextColumn(card)" style="color: mediumblue">Следующая колонка</a>
+                    <div class="tasks" v-if="card.edit">
+                        <form @submit.prevent="updateTask(card)">
+                            <p style="font-size: ">Новое название: 
+                                <input type="text" v-model="card.name" placeholder="Название">
+                            </p>
+                            <p>Новое описание: 
+                                <textarea v-model="card.description"></textarea>
+                            </p>
+                            <p>
+                                <input type="submit" class="btn" value="Изменить карточку">
+                            </p>
+                        </form>
+                    </div>
+                    <div class="tasks" v-if="card.transfer">
+                        <form @submit.prevent="lastColumn(card)">
+                            <p>Причина переноса:
+                                <input type="text" id="reasonInput">
+                            </p>
+                            <p>
+                                <input type="submit" value="Перенос">
+                            </p>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
 </div>
 
  `,
@@ -235,20 +348,53 @@ Vue.component('note-list3', {
     data() {
         return {}
     },
-    methods: {},
+    methods: {
+        nextColumn(card) {
+            this.note_list3.splice(this.note_list3.indexOf(card), 1)
+            eventBus.$emit('addColumn_4', card)
+        },
+        lastColumn(card) {
+            let reasonValue = document.getElementById('reasonInput').value;
+            card.reason.push(reasonValue)
+            card.transfer = false
+            this.note_list3.splice(this.note_list3.indexOf(card), 1)
+            eventBus.$emit('addColumn_2', card)
+        },
+        updateTask(card){
+            card.editDate = new Date().toLocaleString()
+            card.edit = false
+            this.note_list3.push(card)
+            this.note_list3.splice(this.note_list3.indexOf(card), 1)
+        }
+    },
 
     computed: {},
 
     props: {
         note_list3: {
             type: Array,
+        },
+        card: {
+            type: Object
         },
     }
 })
 Vue.component('note-list4', {
     template: `
 <div>
-            
+           <section id="main" class="main-alt">
+            <div class="column column__four">
+            <p>Выполненные задачи</p>
+                <div class="card" v-for="card in note_list4">
+                    <div class="tasks">Название: {{ card.name }}</div>
+                    <div class="tasks">Описание: {{ card.description }}</div>
+                    <div class="tasks">Дата создания: {{ card.date }}</div>
+                    <div class="tasks">Крайний срок: {{ card.deadline }}</div>
+                        <div class="tasks" v-if="card.period" style="color: green">Завершено вовремя</div>
+                        <div class="tasks" v-else style="color: red">Завершено не вовремя</div>
+                </div>
+            </div>
+        </section> 
 </div>
 
  `,
@@ -261,9 +407,12 @@ Vue.component('note-list4', {
     computed: {},
 
     props: {
-        note_list3: {
+        note_list4: {
             type: Array,
         },
+        card: {
+            type: Object
+        }
     }
 })
 

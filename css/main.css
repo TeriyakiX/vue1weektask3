@@ -308,3 +308,18 @@ textarea {
     margin-bottom: 5px;
     padding-right: 10px;
 }
+
+.card {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border: 2px solid teal;
+    width: 200px;
+    height: 100%;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.star{
+    color: teal;
+}
