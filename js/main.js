@@ -13,20 +13,20 @@ Vue.component('notes', {
        
         <div class="note_list_1_column">
         <h2>Запланированные задачи</h2>
-             <note-list1  :note_list1="note_list1"></note-list1> 
+             <note-list1  :FixStar="FixStar" :note_list1="note_list1"></note-list1> 
         </div>
         
         <div class="note_list_2_column">
         <h2>Задачи в работе</h2>
-             <note-list2  :note_list2="note_list2"></note-list2> 
+             <note-list2 :FixStar="FixStar"  :note_list2="note_list2"></note-list2> 
         </div>
         <div class="note_list_3_column">
         <h2>Тестирование</h2>
-             <note-list3  :note_list3="note_list3"></note-list3> 
+             <note-list3 :FixStar="FixStar" :note_list3="note_list3"></note-list3> 
         </div>
         <div class="note_list_4_column">
         <h2>Выполненные задачи</h2>
-             <note-list4  :note_list4="note_list4"></note-list4> 
+             <note-list4  :FixStar="FixStar" :note_list4="note_list4"></note-list4> 
         </div>
         
         </div>
@@ -44,9 +44,22 @@ Vue.component('notes', {
         }
     },
     methods: {
+
     },
 
-    computed: {},
+    computed: {
+        FixStar: function() {
+            function compare(a, b) {
+                if (a.star < b.star)
+                    return -1;
+                if (a.star > b.star)
+                    return 1;
+                return 0;
+            }
+
+            return this.card.sort(compare);
+        }
+    },
 
     mounted() {
         eventBus.$on('addColumn_1', card => {
@@ -160,7 +173,9 @@ Vue.component('add-notes', {
         note_list1:{
             type: Array,
             required: false,
-
+        },
+        FixStar: {
+            type: Function
         },
     },
     mounted() {
@@ -207,19 +222,23 @@ Vue.component('note-list1', {
         nextColumn(card) {
             this.note_list1.splice(this.note_list1.indexOf(card), 1)
             eventBus.$emit('addColumn_2', card)
+            this.FixStar()
+
         },
         deleteCard(card) {
             this.note_list1.splice(this.note_list1.indexOf(card), 1)
+            this.FixStar()
         },
         updateTask(card) {
             card.edit = false
             this.note_list1.push(card)
             this.note_list1.splice(this.note_list1.indexOf(card), 1)
             card.editDate = new Date().toLocaleString()
+            this.FixStar()
         },
     },
-    computed: {},
-
+    computed: {
+    },
     props: {
         note_list1: {
             type: Array,
@@ -233,6 +252,9 @@ Vue.component('note-list1', {
         errors: {
             type: Array,
         },
+        FixStar: {
+            type: Function
+        }
     },
 
 })
@@ -278,12 +300,14 @@ Vue.component('note-list2', {
         nextColumn(card) {
             this.note_list2.splice(this.note_list2.indexOf(card), 1)
             eventBus.$emit('addColumn_3', card)
+            this.FixStar()
         },
         updateTask(card) {
             card.editDate = new Date().toLocaleString()
             card.edit = false
             this.note_list2.push(card)
             this.note_list2.splice(this.note_list2.indexOf(card), 1)
+            this.FixStar()
         }
     },
 
@@ -296,6 +320,9 @@ Vue.component('note-list2', {
         card: {
             type: Object,
         },
+        FixStar: {
+            type: Function
+        }
     }
 })
 Vue.component('note-list3', {
@@ -352,6 +379,7 @@ Vue.component('note-list3', {
         nextColumn(card) {
             this.note_list3.splice(this.note_list3.indexOf(card), 1)
             eventBus.$emit('addColumn_4', card)
+            this.FixStar()
         },
         lastColumn(card) {
             let reasonValue = document.getElementById('reasonInput').value;
@@ -359,12 +387,14 @@ Vue.component('note-list3', {
             card.transfer = false
             this.note_list3.splice(this.note_list3.indexOf(card), 1)
             eventBus.$emit('addColumn_2', card)
+            this.FixStar()
         },
         updateTask(card){
             card.editDate = new Date().toLocaleString()
             card.edit = false
             this.note_list3.push(card)
             this.note_list3.splice(this.note_list3.indexOf(card), 1)
+            this.FixStar()
         }
     },
 
@@ -377,6 +407,9 @@ Vue.component('note-list3', {
         card: {
             type: Object
         },
+        FixStar: {
+            type: Function
+        }
     }
 })
 Vue.component('note-list4', {
@@ -384,9 +417,9 @@ Vue.component('note-list4', {
 <div>
            <section id="main" class="main-alt">
             <div class="column column__four">
-            <p>Выполненные задачи</p>
                 <div class="card" v-for="card in note_list4">
                     <div class="tasks">Название: {{ card.name }}</div>
+                    <div class="star">Важность: {{ card.star }}</div>
                     <div class="tasks">Описание: {{ card.description }}</div>
                     <div class="tasks">Дата создания: {{ card.date }}</div>
                     <div class="tasks">Крайний срок: {{ card.deadline }}</div>
