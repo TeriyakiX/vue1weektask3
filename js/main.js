@@ -1,5 +1,10 @@
 let eventBus = new Vue()
-
+function fixStar(a, b) {
+    console.log(a.star, b.star);
+    return a.star - b.star;
+}
+// 11 10 24 2 3 1 22
+// 1 10 11 2 22 24 3
 Vue.component('notes', {
     template: `
    <div>
@@ -13,7 +18,7 @@ Vue.component('notes', {
        
         <div class="note_list_1_column">
         <h2>Запланированные задачи</h2>
-             <note-list1 :FixStar="FixStar"  :note_list1="note_list1"></note-list1> 
+             <note-list1 :note_list1="note_list1"></note-list1> 
         </div>
         
         <div class="note_list_2_column">
@@ -44,6 +49,8 @@ Vue.component('notes', {
         }
     },
     methods: {
+
+
 
     },
 
@@ -83,7 +90,7 @@ Vue.component('notes', {
 
 Vue.component('add-notes', {
     template: `
-    <section>
+<section>
     <a href="#openModal" class="btn btnModal">Создать карточку</a>
     <div id="openModal" class="modal">
       <div class="modal-dialog">
@@ -127,8 +134,6 @@ Vue.component('add-notes', {
             date: null,
             deadline: null,
             star: null
-
-
         }
     },
     methods: {
@@ -151,6 +156,7 @@ Vue.component('add-notes', {
             this.date = null
             this.deadline = null
             this.star = null
+
             },
 
         },
@@ -164,10 +170,6 @@ Vue.component('add-notes', {
             type: Array,
             required: false,
         },
-        FixStar: {
-            type: Function
-        }
-
     },
     mounted() {
     }
@@ -213,8 +215,7 @@ Vue.component('note-list1', {
         nextColumn(card) {
             this.note_list1.splice(this.note_list1.indexOf(card), 1)
             eventBus.$emit('addColumn_2', card)
-
-
+            this.note_list1.sort(fixStar);
         },
         deleteCard(card) {
             this.note_list1.splice(this.note_list1.indexOf(card), 1)
@@ -242,9 +243,10 @@ Vue.component('note-list1', {
         errors: {
             type: Array,
         },
-        FixStar: {
+        fixStar: {
             type: Function
         }
+
     },
 
 })
@@ -290,6 +292,7 @@ Vue.component('note-list2', {
         nextColumn(card) {
             this.note_list2.splice(this.note_list2.indexOf(card), 1)
             eventBus.$emit('addColumn_3', card)
+            this.note_list2.sort(fixStar);
 
         },
         updateTask(card) {
@@ -309,9 +312,6 @@ Vue.component('note-list2', {
         card: {
             type: Object,
         },
-        FixStar: {
-            type: Function
-        }
     }
 })
 Vue.component('note-list3', {
@@ -368,6 +368,8 @@ Vue.component('note-list3', {
         nextColumn(card) {
             this.note_list3.splice(this.note_list3.indexOf(card), 1)
             eventBus.$emit('addColumn_4', card)
+            this.note_list3.sort(fixStar);
+            console.log(this.note_list3)
         },
         lastColumn(card) {
             let reasonValue = document.getElementById('reasonInput').value;
@@ -393,9 +395,7 @@ Vue.component('note-list3', {
         card: {
             type: Object
         },
-        FixStar: {
-            type: Function
-        }
+
     }
 })
 Vue.component('note-list4', {
