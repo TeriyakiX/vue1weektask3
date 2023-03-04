@@ -1,7 +1,8 @@
 let eventBus = new Vue()
-function fixStar(a, b) {
-    console.log(a.star, b.star);
-    return a.star - b.star;
+function fixStar(a,b) {
+    this.card.sort((a, b) => {
+            return b.star - a.star
+    })
 }
 // 11 10 24 2 3 1 22
 // 1 10 11 2 22 24 3
@@ -46,6 +47,7 @@ Vue.component('notes', {
             note_list3: [],
             note_list4: [],
             errors: [],
+            sortByYear: false
         }
     },
     methods: {
@@ -156,7 +158,6 @@ Vue.component('add-notes', {
             this.date = null
             this.deadline = null
             this.star = null
-
             },
 
         },
@@ -188,7 +189,7 @@ Vue.component('note-list1', {
                         <div class="tasks">Дата создания: {{ card.date }}</div>
                         <div class="tasks">Крайний срок: {{ card.deadline }}</div>
                         <div class="tasks" v-if="card.editDate != null">Последнее изменение: {{ card.editDate }}</div>
-                                         <a @click="nextColumn(card)" style="color: mediumblue">Следующая колонка</a>
+                                         <a @click="nextColumn(card)" style="color: mediumblue" >Следующая колонка</a>
                         <div class="tasks" v-if="card.edit">
                             <form @submit.prevent="updateTask(card)">
                                 <p>Новое название: 
@@ -245,9 +246,12 @@ Vue.component('note-list1', {
         },
         fixStar: {
             type: Function
-        }
+        },
+        sortByYear: {
+        type: Boolean
+        },
+    }
 
-    },
 
 })
 
@@ -292,7 +296,7 @@ Vue.component('note-list2', {
         nextColumn(card) {
             this.note_list2.splice(this.note_list2.indexOf(card), 1)
             eventBus.$emit('addColumn_3', card)
-            this.note_list2.sort(fixStar);
+            this.note_list2.sort();
 
         },
         updateTask(card) {
@@ -368,7 +372,7 @@ Vue.component('note-list3', {
         nextColumn(card) {
             this.note_list3.splice(this.note_list3.indexOf(card), 1)
             eventBus.$emit('addColumn_4', card)
-            this.note_list3.sort(fixStar);
+            this.note_list3.sort();
             console.log(this.note_list3)
         },
         lastColumn(card) {
